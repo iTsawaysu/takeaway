@@ -1,5 +1,6 @@
-package com.sun.takeaway.common;
+package com.sun.takeaway.model.request;
 
+import com.sun.takeaway.constant.CommonConstant;
 import lombok.Data;
 
 /**

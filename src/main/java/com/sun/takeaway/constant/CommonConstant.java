@@ -1,4 +1,4 @@
-package com.sun.takeaway.common;
+package com.sun.takeaway.constant;
 
 /**
  * 通用常量

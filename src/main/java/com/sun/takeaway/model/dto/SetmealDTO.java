@@ -1,4 +1,4 @@
-package com.sun.takeaway.entity.dto;
+package com.sun.takeaway.model.dto;
 
 import com.sun.takeaway.entity.Setmeal;
 import com.sun.takeaway.entity.SetmealDish;

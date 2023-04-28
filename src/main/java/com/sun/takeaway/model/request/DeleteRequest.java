@@ -1,4 +1,4 @@
-package com.sun.takeaway.common;
+package com.sun.takeaway.model.request;
 
 import lombok.Data;
 import java.io.Serializable;
