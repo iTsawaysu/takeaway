@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sun.takeaway.common.CommonResult;
 import com.sun.takeaway.common.ErrorCode;
 import com.sun.takeaway.entity.Category;
-import com.sun.takeaway.exception.BusinessException;
+import com.sun.takeaway.exception.ThrowUtils;
 import com.sun.takeaway.model.request.CategoryAddRequest;
 import com.sun.takeaway.service.CategoryService;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +27,7 @@ public class CategoryController {
      */
     @PostMapping
     public CommonResult<String> addCategory(@RequestBody CategoryAddRequest addCategoryRequest) {
-        if (addCategoryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(addCategoryRequest == null, ErrorCode.PARAMS_ERROR);
         return categoryService.addCategory(addCategoryRequest);
     }
 
@@ -59,10 +57,11 @@ public class CategoryController {
 
     /**
      * 查询分类（type 为 1 代表菜品分类，type 为 2 代表套餐分类）
+     * 此处直接使用 Category 实体接收前端的请求参数 type
      */
     @GetMapping("/list")
-    public CommonResult<List<Category>> listByType(@RequestParam("type") String type) {
-        return categoryService.listByType(type);
+    public CommonResult<List<Category>> listByType(Category category) {
+        return categoryService.listByType(category);
     }
 
 }

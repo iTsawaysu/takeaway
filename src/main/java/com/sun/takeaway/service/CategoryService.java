@@ -38,5 +38,5 @@ public interface CategoryService extends IService<Category> {
     /**
      * 查询分类（type 为 1 代表菜品分类，type 为 2 代表套餐分类）
      */
-    CommonResult<List<Category>> listByType(String type);
+    CommonResult<List<Category>> listByType(Category category);
 }

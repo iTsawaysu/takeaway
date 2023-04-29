@@ -32,5 +32,5 @@ public interface DishService extends IService<Dish> {
      */
     CommonResult<String> update(DishDTO dishDTO);
 
-    CommonResult<List<Dish>> getDishesByCategoryId(Long categoryId);
+    CommonResult<List<DishDTO>> getDishesByCategoryId(Long categoryId);
 }

@@ -87,9 +87,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      */
     @Override
     public CommonResult<String> updateCategory(Category category) {
-        if (category == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(category == null, ErrorCode.PARAMS_ERROR);
         boolean result = this.updateById(category);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return CommonResult.success("更新成功");
@@ -99,10 +97,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * 查询分类（type 为 1 代表菜品分类，type 为 2 代表套餐分类）
      */
     @Override
-    public CommonResult<List<Category>> listByType(String type) {
+    public CommonResult<List<Category>> listByType(Category category) {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(type)) {
-            wrapper.eq(Category::getType, type);
+        if (category != null) {
+            if (category.getType() != null) {
+                wrapper.eq(Category::getType, category.getType());
+            }
         }
         wrapper.orderByAsc(Category::getSort).orderByAsc(Category::getUpdateTime);
         List<Category> categoryList = this.list(wrapper);

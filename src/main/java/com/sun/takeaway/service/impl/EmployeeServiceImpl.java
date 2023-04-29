@@ -20,8 +20,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.sun.takeaway.constant.EmployeeConstant.AVAILABLE_EMPLOYEE;
-import static com.sun.takeaway.constant.EmployeeConstant.EMPLOYEE_LOGIN_STATE;
+import static com.sun.takeaway.constant.CommonConstant.AVAILABLE;
+import static com.sun.takeaway.constant.LOGINConstant.*;
 
 /**
  * @author sun
@@ -52,11 +52,9 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         Employee employee = this.lambdaQuery()
                 .eq(Employee::getUsername, username)
                 .eq(Employee::getPassword, encryptPassword)
-                .eq(Employee::getStatus, AVAILABLE_EMPLOYEE)
+                .eq(Employee::getStatus, AVAILABLE)
                 .one();
-        if (employee == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户不存在或密码错误");
-        }
+        ThrowUtils.throwIf(employee == null, ErrorCode.PARAMS_ERROR, "该用户不存在或密码错误");
 
         // 4. 记录用户登录态
         request.getSession().setAttribute(EMPLOYEE_LOGIN_STATE, employee.getId());
@@ -81,9 +79,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      */
     @Override
     public boolean logout(HttpServletRequest request) {
-        if (request.getSession().getAttribute(EMPLOYEE_LOGIN_STATE) == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
-        }
+        ThrowUtils.throwIf(request.getSession().getAttribute(EMPLOYEE_LOGIN_STATE) == null, ErrorCode.NOT_LOGIN_ERROR);
         request.getSession().removeAttribute(EMPLOYEE_LOGIN_STATE);
         BaseContext.remove();
         return false;
@@ -94,9 +90,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      */
     @Override
     public CommonResult<String> addEmployee(Employee employee, HttpServletRequest request) {
-        if (employee == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(employee == null, ErrorCode.PARAMS_ERROR);
         if (this.lambdaQuery().eq(Employee::getUsername, employee.getUsername()).one() != null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名不能重复");
         }
@@ -135,9 +129,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      */
     @Override
     public CommonResult<String> update(Employee employee, HttpServletRequest request) {
-        if (employee == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(employee == null, ErrorCode.PARAMS_ERROR);
         // 注意：前端发送过来的 Employee 对象中的 status 值已经发生了反转，只需要修改数据库即可
         employee.setUpdateUser(BaseContext.get());
         boolean result = this.updateById(employee);
@@ -150,10 +142,8 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      */
     @Override
     public CommonResult<LoginEmployeeVO> getEmployeeById(Long id) {
-         Employee employee = getById(id);
-         if (employee == null) {
-             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-         }
+        Employee employee = getById(id);
+        ThrowUtils.throwIf(employee == null, ErrorCode.NOT_FOUND_ERROR);
         LoginEmployeeVO loginEmployeeVO = new LoginEmployeeVO();
         BeanUtils.copyProperties(employee, loginEmployeeVO);
         return CommonResult.success(loginEmployeeVO);

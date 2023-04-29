@@ -5,6 +5,7 @@ import com.sun.takeaway.common.CommonResult;
 import com.sun.takeaway.common.ErrorCode;
 import com.sun.takeaway.entity.Employee;
 import com.sun.takeaway.exception.BusinessException;
+import com.sun.takeaway.exception.ThrowUtils;
 import com.sun.takeaway.model.request.EmployeeLoginRequest;
 import com.sun.takeaway.model.vo.LoginEmployeeVO;
 import com.sun.takeaway.service.EmployeeService;
@@ -26,9 +27,7 @@ public class EmployeeController {
 
     @PostMapping("/login")
     public CommonResult<LoginEmployeeVO> login(@RequestBody EmployeeLoginRequest employeeLoginRequest, HttpServletRequest request) {
-        if (employeeLoginRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(employeeLoginRequest == null, ErrorCode.PARAMS_ERROR);
         String username = employeeLoginRequest.getUsername();
         String password = employeeLoginRequest.getPassword();
         if (StringUtils.isAnyBlank(username, password)) {
@@ -43,9 +42,7 @@ public class EmployeeController {
      */
     @PostMapping("/logout")
     public CommonResult<Boolean> logout(HttpServletRequest request) {
-        if (request == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
         boolean result = employeeService.logout(request);
         return CommonResult.success(result);
     }

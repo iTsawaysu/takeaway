@@ -3,8 +3,7 @@ package com.sun.takeaway.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sun.takeaway.common.CommonResult;
 import com.sun.takeaway.common.ErrorCode;
-import com.sun.takeaway.entity.Dish;
-import com.sun.takeaway.exception.BusinessException;
+import com.sun.takeaway.exception.ThrowUtils;
 import com.sun.takeaway.model.dto.DishDTO;
 import com.sun.takeaway.service.DishService;
 import org.apache.ibatis.annotations.Param;
@@ -28,9 +27,7 @@ public class DishController {
      */
     @PostMapping
     public CommonResult<String> add(@RequestBody DishDTO dishDTO) {
-        if (dishDTO == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(dishDTO == null, ErrorCode.PARAMS_ERROR);
         return dishService.add(dishDTO);
     }
 
@@ -57,9 +54,7 @@ public class DishController {
      */
     @PutMapping
     public CommonResult<String> update(@RequestBody DishDTO dishDTO) {
-        if (dishDTO == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(dishDTO == null, ErrorCode.PARAMS_ERROR);
         return dishService.update(dishDTO);
     }
 
@@ -67,7 +62,7 @@ public class DishController {
      * 根据菜品分类 id 查询该分类下的菜品
      */
     @GetMapping("/list")
-    public CommonResult<List<Dish>> getDishesByCategoryId(@Param("categoryId") Long categoryId) {
+    public CommonResult<List<DishDTO>> getDishesByCategoryId(@Param("categoryId") Long categoryId) {
         return dishService.getDishesByCategoryId(categoryId);
     }
 

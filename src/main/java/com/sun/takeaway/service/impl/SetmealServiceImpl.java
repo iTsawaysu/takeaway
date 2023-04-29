@@ -24,6 +24,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.sun.takeaway.constant.CommonConstant.AVAILABLE;
+
 /**
  * @author sun
  */
@@ -99,7 +101,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         // 1. 售卖中的套餐无法删除
         LambdaQueryWrapper<Setmeal> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Setmeal::getId, ids);
-        wrapper.eq(Setmeal::getStatus, 1);
+        wrapper.eq(Setmeal::getStatus, AVAILABLE);
         long count = this.count(wrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "售卖中，无法删除");
@@ -116,5 +118,17 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
 
         return CommonResult.success("删除成功");
+    }
+
+    /**
+     * 根据套餐分类 id 查询该分类下的套餐
+     */
+    @Override
+    public CommonResult<List<Setmeal>> getSetmealListByCategoryId(Setmeal setmeal) {
+        List<Setmeal> setmealList = this.lambdaQuery()
+                .eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId())
+                .eq(Setmeal::getStatus, setmeal.getStatus())
+                .orderByDesc(Setmeal::getUpdateTime).list();
+        return CommonResult.success(setmealList);
     }
 }

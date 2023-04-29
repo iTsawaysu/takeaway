@@ -2,18 +2,29 @@ package com.sun.takeaway.constant;
 
 /**
  * 通用常量
+ *
  * @author sun
  */
 public interface CommonConstant {
 
     /**
-     * 升序
+     * 可用
      */
-    String SORT_ORDER_ASC = "ascend";
+    int AVAILABLE = 1;
 
     /**
-     * 降序
+     * 禁用
      */
-    String SORT_ORDER_DESC = " descend";
+    int BAN = 0;
+
+    /**
+     * 1
+     */
+    int ONE = 1;
+
+    /**
+     * 0
+     */
+    int ZERO = 0;
 
 }

@@ -1,7 +1,13 @@
 package com.sun.takeaway.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.sun.takeaway.common.CommonResult;
+import com.sun.takeaway.entity.User;
+import com.sun.takeaway.service.UserService;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 /**
  * @author sun
@@ -10,4 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class UserController {
 
+    @Resource
+    private UserService userService;
+
+    /**
+     * 发送验证码
+     */
+    @PostMapping("/sendMsg")
+    public CommonResult<String> sendMessage(@RequestBody User user, HttpSession session) {
+        return userService.sendMessage(user, session);
+    }
+
+    /**
+     * 登录
+     */
+    @PostMapping("/login")
+    public CommonResult<String> login(@RequestBody Map<String, String> map, HttpSession session) {
+        return userService.login(map, session);
+    }
 }

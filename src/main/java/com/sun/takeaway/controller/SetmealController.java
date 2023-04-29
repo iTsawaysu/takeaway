@@ -3,7 +3,8 @@ package com.sun.takeaway.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sun.takeaway.common.CommonResult;
 import com.sun.takeaway.common.ErrorCode;
-import com.sun.takeaway.exception.BusinessException;
+import com.sun.takeaway.entity.Setmeal;
+import com.sun.takeaway.exception.ThrowUtils;
 import com.sun.takeaway.model.dto.SetmealDTO;
 import com.sun.takeaway.service.SetmealService;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,7 @@ public class SetmealController {
      */
     @PostMapping
     public CommonResult<String> add(@RequestBody SetmealDTO setmealDTO) {
-        if (setmealDTO == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(setmealDTO == null, ErrorCode.PARAMS_ERROR);
         return setmealService.add(setmealDTO);
     }
 
@@ -50,5 +49,13 @@ public class SetmealController {
     @DeleteMapping
     public CommonResult<String> deleteByIds(@RequestParam("ids") List<Long> ids) {
         return setmealService.deleteByIds(ids);
+    }
+
+    /**
+     * 根据套餐分类 id 查询该分类下的套餐
+     */
+    @GetMapping("/list")
+    public CommonResult<List<Setmeal>> getSetmealListByCategoryId(Setmeal setmeal) {
+        return setmealService.getSetmealListByCategoryId(setmeal);
     }
 }

@@ -9,7 +9,6 @@ import com.sun.takeaway.common.ErrorCode;
 import com.sun.takeaway.entity.Category;
 import com.sun.takeaway.entity.Dish;
 import com.sun.takeaway.entity.DishFlavor;
-import com.sun.takeaway.exception.BusinessException;
 import com.sun.takeaway.exception.ThrowUtils;
 import com.sun.takeaway.mapper.DishMapper;
 import com.sun.takeaway.model.dto.DishDTO;
@@ -24,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.sun.takeaway.constant.CommonConstant.AVAILABLE;
 
 /**
  * @author sun
@@ -87,13 +88,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      */
     @Override
     public CommonResult<DishDTO> getDishById(Long id) {
-        if (id == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(id == null, ErrorCode.PARAMS_ERROR);
         Dish dish = this.getById(id);
-        if (dish == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-        }
+        ThrowUtils.throwIf(dish == null, ErrorCode.NOT_FOUND_ERROR);
         DishDTO dishDTO = new DishDTO();
         BeanUtils.copyProperties(dish, dishDTO);
 
@@ -134,11 +131,29 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      * 根据菜品分类 id 查询该分类下的菜品
      */
     @Override
-    public CommonResult<List<Dish>> getDishesByCategoryId(Long categoryId) {
+    public CommonResult<List<DishDTO>> getDishesByCategoryId(Long categoryId) {
         LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(categoryId != null, Dish::getCategoryId, categoryId).eq(Dish::getStatus, 1);
+        wrapper.eq(categoryId != null, Dish::getCategoryId, categoryId).eq(Dish::getStatus, AVAILABLE);
         wrapper.orderByAsc(Dish::getSort).orderByAsc(Dish::getUpdateTime);
         List<Dish> dishList = this.list(wrapper);
-        return CommonResult.success(dishList);
+
+        List<DishDTO> dishDTOList = dishList.stream().map(item -> {
+            DishDTO dishDTO = new DishDTO();
+            BeanUtils.copyProperties(item, dishDTO);
+
+            // 设置 categoryName
+            Category category = categoryService.getById(item.getCategoryId());
+            if (category != null) {
+                dishDTO.setCategoryName(category.getName());
+            }
+
+            // 设置 dishFlavors
+            List<DishFlavor> dishFlavorList = dishFlavorService.lambdaQuery().eq(DishFlavor::getDishId, item.getId()).list();
+            if (CollectionUtil.isNotEmpty(dishFlavorList)) {
+                dishDTO.setFlavors(dishFlavorList);
+            }
+            return dishDTO;
+        }).collect(Collectors.toList());
+        return CommonResult.success(dishDTOList);
     }
 }

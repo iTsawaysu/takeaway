@@ -27,4 +27,9 @@ public interface SetmealService extends IService<Setmeal> {
      * 删除套餐（同时需要删除套餐和菜品的关联关系）
      */
     CommonResult<String> deleteByIds(List<Long> ids);
+
+    /**
+     * 根据套餐分类 id 查询该分类下的套餐
+     */
+    CommonResult<List<Setmeal>> getSetmealListByCategoryId(Setmeal setmeal);
 }
