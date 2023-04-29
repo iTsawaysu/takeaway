@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- 菜品
+ * 菜品
  */
 @Data
 public class Dish implements Serializable {
@@ -18,43 +18,67 @@ public class Dish implements Serializable {
 
     private Long id;
 
-    // 菜品名称
+    /**
+     * 菜品名称
+     */
     private String name;
 
-    // 菜品分类id
+    /**
+     * 菜品分类id
+     */
     private Long categoryId;
 
-    // 菜品价格
+    /**
+     * 菜品价格
+     */
     private BigDecimal price;
 
-    // 商品码
+    /**
+     * 商品码
+     */
     private String code;
 
-    // 图片
+    /**
+     * 图片
+     */
     private String image;
 
-    // 描述信息
+    /**
+     * 描述信息
+     */
     private String description;
 
-    // 0 停售 1 起售
+    /**
+     * 0 停售 1 起售
+     */
     private Integer status;
 
-    // 顺序
+    /**
+     * 顺序
+     */
     private Integer sort;
 
-    // 创建时间
+    /**
+     * 创建时间
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    // 更新时间
+    /**
+     * 更新时间
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    // 创建人
+    /**
+     * 创建人
+     */
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    // 修改人
+    /**
+     * 修改人
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 }

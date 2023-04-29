@@ -29,20 +29,31 @@ public class LoginEmployeeVO implements Serializable {
     // 性别
     private String sex;
 
+    // 身份证号
+    private String idNumber;
+
     // 状态 （0 禁用，1 正常）
     private Integer status;
 
-    // 创建时间
+        /**
+     * 创建时间
+     */
     private LocalDateTime createTime;
 
-    // 更新时间
+        /**
+     * 更新时间
+     */
     private LocalDateTime updateTime;
 
-    // 创建人
+        /**
+     * 创建人
+     */
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    // 修改人
+        /**
+     * 修改人
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 }

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 /**
  * 菜品口味
+ *
  * @author sun
  */
 @Data
@@ -18,32 +19,48 @@ public class DishFlavor implements Serializable {
 
     private Long id;
 
-    // 菜品id
+    /**
+     * 菜品id
+     */
     private Long dishId;
 
-    // 口味名称
+    /**
+     * 口味名称
+     */
     private String name;
 
-    // 口味数据list
+    /**
+     * 口味数据list
+     */
     private String value;
 
-    // 创建时间
+    /**
+     * 创建时间
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    // 更新时间
+    /**
+     * 更新时间
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    // 创建人
+    /**
+     * 创建人
+     */
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    // 修改人
+    /**
+     * 修改人
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-    // 是否删除
+    /**
+     * 是否删除
+     */
     private Integer isDeleted;
 
 }

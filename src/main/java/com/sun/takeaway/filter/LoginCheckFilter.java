@@ -2,6 +2,7 @@ package com.sun.takeaway.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.sun.takeaway.common.CommonResult;
+import com.sun.takeaway.utils.BaseContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -45,7 +46,9 @@ public class LoginCheckFilter implements Filter {
         }
 
         // 3. 判断是否登录（登录则直接放行）
-        if (request.getSession().getAttribute(EMPLOYEE_LOGIN_STATE) != null) {
+        Long id = (Long) request.getSession().getAttribute(EMPLOYEE_LOGIN_STATE);
+        if (id != null) {
+            BaseContext.set(id);
             filterChain.doFilter(request, response);
             return;
         }

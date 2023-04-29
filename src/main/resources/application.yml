@@ -20,3 +20,6 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
   mapper-locations: classpath:/mapper/**/*Mapper.xml
+
+upload:
+  basePath: /Users/sun/Downloads/pictures/
