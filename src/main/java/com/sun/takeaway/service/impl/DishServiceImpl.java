@@ -1,6 +1,7 @@
 package com.sun.takeaway.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,14 +18,18 @@ import com.sun.takeaway.service.DishFlavorService;
 import com.sun.takeaway.service.DishService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.sun.takeaway.constant.CommonConstant.AVAILABLE;
+import static com.sun.takeaway.constant.RedisConstant.CACHE_DISH;
+import static com.sun.takeaway.constant.RedisConstant.TTL_ONE;
 
 /**
  * @author sun
@@ -38,6 +43,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     @Resource
     private CategoryService categoryService;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 新增菜品（新增菜品口味）
+     */
     @Transactional
     @Override
     public CommonResult<String> add(DishDTO dishDTO) {
@@ -55,6 +66,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         return CommonResult.success("新增成功");
     }
 
+    /**
+     * 分页查询
+     */
     @Override
     public CommonResult<Page> page(int page, int pageSize, String name) {
         Page<Dish> pageInfo = new Page<>(page, pageSize);
@@ -104,6 +118,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         return CommonResult.success(dishDTO);
     }
 
+    /**
+     * 修改菜品（修改菜品口味）
+     */
     @Transactional
     @Override
     public CommonResult<String> update(DishDTO dishDTO) {
@@ -124,6 +141,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
                 }).collect(Collectors.toList());
         result = dishFlavorService.saveBatch(flavors);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        stringRedisTemplate.delete(CACHE_DISH + dishDTO.getCategoryId());
         return CommonResult.success("修改成功");
     }
 
@@ -132,12 +150,20 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      */
     @Override
     public CommonResult<List<DishDTO>> getDishesByCategoryId(Long categoryId) {
+        // 先从 Redis 中查询，如果查询到则直接返回
+        String dishJsonFromRedis = stringRedisTemplate.opsForValue().get(CACHE_DISH + categoryId);
+        List<DishDTO> dishDTOList = null;
+        if (StringUtils.isNotBlank(dishJsonFromRedis)) {
+            dishDTOList = JSONUtil.toList(JSONUtil.parseArray(dishJsonFromRedis), DishDTO.class);
+            return CommonResult.success(dishDTOList);
+        }
+
         LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(categoryId != null, Dish::getCategoryId, categoryId).eq(Dish::getStatus, AVAILABLE);
         wrapper.orderByAsc(Dish::getSort).orderByAsc(Dish::getUpdateTime);
         List<Dish> dishList = this.list(wrapper);
 
-        List<DishDTO> dishDTOList = dishList.stream().map(item -> {
+        dishDTOList = dishList.stream().map(item -> {
             DishDTO dishDTO = new DishDTO();
             BeanUtils.copyProperties(item, dishDTO);
 
@@ -154,6 +180,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
             }
             return dishDTO;
         }).collect(Collectors.toList());
+
+        // 从数据库中查询到后返回，并将其存入 Redis 中
+        stringRedisTemplate.opsForValue().set(CACHE_DISH + categoryId, JSONUtil.toJsonStr(dishDTOList), TTL_ONE, TimeUnit.DAYS);
         return CommonResult.success(dishDTOList);
     }
 }

@@ -1,6 +1,7 @@
 package com.sun.takeaway.common;
 
 import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +9,8 @@ import java.io.Serializable;
  */
 @Data
 public class CommonResult<T> implements Serializable {
+    public static final long serialVersionUID = 1L;
+
     private int code;
     private T data;
     private String message;

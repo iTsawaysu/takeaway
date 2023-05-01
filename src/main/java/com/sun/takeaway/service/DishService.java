@@ -32,5 +32,8 @@ public interface DishService extends IService<Dish> {
      */
     CommonResult<String> update(DishDTO dishDTO);
 
+    /**
+     * 根据菜品分类 id 查询该分类下的菜品
+     */
     CommonResult<List<DishDTO>> getDishesByCategoryId(Long categoryId);
 }

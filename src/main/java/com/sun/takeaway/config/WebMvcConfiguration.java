@@ -23,6 +23,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         // 访问 /backend、/frontend 开头的任意路径，都会被映射到类路径下的 backend 和 frontend 目录
         registry.addResourceHandler("/backend/**").addResourceLocations("classpath:/backend/");
         registry.addResourceHandler("/front/**").addResourceLocations("classpath:/front/");
+        registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 
     /**

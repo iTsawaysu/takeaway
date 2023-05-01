@@ -1,0 +1,35 @@
+spring:
+  main:
+    # 允许 Bean 定义覆盖
+    allow-bean-definition-overriding: true
+  shardingsphere:
+    datasource:
+      names: master, slave
+      # Master 数据源
+      master:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3307/takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+        username: root
+        password: root
+      # Slave 数据源
+      slave:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3308/takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+        username: root
+        password: root
+    # 读写分离配置
+    masterslave:
+      # 配置从库的负载均衡策略为轮询（从库负责处理查询操作，可能有多个从库）
+      load-balance-algorithm-type: round_robin
+      # 最终数据源的名称（数据源 Bean 的名称）
+      name: dataSource
+      # 主库数据源的名称
+      master-data-source-name: master
+      # 从库数据源的名称列表（多个之间用逗号分割）
+      slave-data-source-names: slave
+    props:
+      sql:
+        # 开启 SQL 显示
+        show: true

@@ -1,5 +1,6 @@
 package com.sun.takeaway.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,14 +18,18 @@ import com.sun.takeaway.service.SetmealDishService;
 import com.sun.takeaway.service.SetmealService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.sun.takeaway.constant.CommonConstant.AVAILABLE;
+import static com.sun.takeaway.constant.RedisConstant.CACHE_SETMEAL;
+import static com.sun.takeaway.constant.RedisConstant.TTL_ONE;
 
 /**
  * @author sun
@@ -37,6 +42,9 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
     @Resource
     private CategoryService categoryService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 新增套餐（新增套餐和菜品的关联关系）
@@ -117,6 +125,10 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         result = setmealDishService.remove(setmealDishWrapper);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
 
+        // 4. 删除 Redis 缓存中的套餐
+        for (Long id : ids) {
+            stringRedisTemplate.delete(CACHE_SETMEAL + id);
+        }
         return CommonResult.success("删除成功");
     }
 
@@ -125,10 +137,24 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      */
     @Override
     public CommonResult<List<Setmeal>> getSetmealListByCategoryId(Setmeal setmeal) {
-        List<Setmeal> setmealList = this.lambdaQuery()
+        ThrowUtils.throwIf(setmeal == null, ErrorCode.PARAMS_ERROR);
+
+        // 先从 Redis 中获取数据，获取到则直接返回
+        String setmealJsonFromRedis = stringRedisTemplate.opsForValue().get(CACHE_SETMEAL + setmeal.getCategoryId());
+        List<Setmeal> setmealList = null;
+        if (StringUtils.isNotBlank(setmealJsonFromRedis)) {
+            setmealList = JSONUtil.toList(JSONUtil.parseArray(setmealJsonFromRedis), Setmeal.class);
+            return CommonResult.success(setmealList);
+        }
+
+        // 从数据库中获取数据后返回
+        setmealList = this.lambdaQuery()
                 .eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId())
                 .eq(Setmeal::getStatus, setmeal.getStatus())
                 .orderByDesc(Setmeal::getUpdateTime).list();
+
+        // 将从数据库中查询到的数据写入到 Redis 中
+        stringRedisTemplate.opsForValue().set(CACHE_SETMEAL + setmeal.getCategoryId(), JSONUtil.toJsonStr(setmealList), TTL_ONE, TimeUnit.DAYS);
         return CommonResult.success(setmealList);
     }
 }
